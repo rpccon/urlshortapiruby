@@ -82,15 +82,15 @@ test:
 # On Heroku and other platform providers, you may have a full connection URL
 # available as an environment variable. For example:
 #
-#   DATABASE_URL="postgres://myuser:mypass@localhost/somedatabase"
+#   STRING_CONNECTION="postgres://jhuhnplxphfwuu:a025229d75ed85b06fb24da06ed41bdc29e5b9287a61f6bcb15082889b072e1b@ec2-174-129-41-12.compute-1.amazonaws.com:5432/d30esgeie7ppvv"
 #
 # You can use this database configuration with:
 #
 #   production:
-#     url: <%= ENV['DATABASE_URL'] %>
+#     url: <%= ENV['STRING_CONNECTION'] %>
 #
 production:
-  <<: *default
-  database: urlshortapiruby_production
-  username: urlshortapiruby
-  password: <%= ENV['URLSHORTAPIRUBY_DATABASE_PASSWORD'] %>
+  adapter: postgresql
+  encoding: unicode
+  database: <%= ENV['STRING_CONNECTION'] %>
+
