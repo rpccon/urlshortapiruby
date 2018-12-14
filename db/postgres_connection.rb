@@ -63,9 +63,11 @@ class PostgresDirect
 
   # Get our data back select * from Url
 
-  def queryUserTable
-    @conn.exec( "select * from Url" ) do |result|
-        return result.getvalue(0, 2)
+  def queryUserTable(url)
+    newQuery = "select * from validate_fullpath('" + url + "', '', '')"
+    puts 'newQuery, ' + newQuery
+    @conn.exec(newQuery) do |result|
+        return result.getvalue(0, 0)
     end
   end
 
@@ -75,7 +77,7 @@ class PostgresDirect
   end
 end
 
-def main
+def verifyFullPath(url)
   p = PostgresDirect.new()
   p.connect
   begin
@@ -83,7 +85,7 @@ def main
     #p.prepareInsertUserStatement
     #p.addUser(1, "Marc")
     #p.addUser(2, "Sharon")
-    return p.queryUserTable #{|row| printf("%d %s\n", row['id'])}
+    return p.queryUserTable(url) #{|row| printf("%d %s\n", row['id'])}
   rescue Exception => e
     puts e.message
     puts e.backtrace.inspect

@@ -3,17 +3,20 @@ require 'json'
 
 class UrlsController < ApplicationController
   def validateFullPath
-    puts "In index3"
-    puts params
-    puts params.values[0]
-    puts "In index"
 
-    prer = main
-    puts prer
-    puts "In index2"
+    url = params.values[0]
+    finalUrl = verifyFullPath(url)
 
-    render json: {"url":prer}
+    if(!finalUrl)
+      render json: {"url":finalUrl}
+    else
+      redirect_to finalUrl
+    end
 
     # @defined = {"a" => "gmail.com/ghgh000"}
+  end
+
+  def verifyUrlWeb
+    
   end
 end
