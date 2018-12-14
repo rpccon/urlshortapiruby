@@ -1,3 +1,5 @@
 Rails.application.routes.draw do
-  root 'urls#index'
+  # get '/id/:idName' => 'urls#index' , as: 'idName'
+
+  get '/validateFullPath' => 'urls#validateFullPath'
 end
