@@ -1,10 +1,9 @@
-
 CREATE TABLE Url
 (
-  id integer PRIMARY KEY,
-  shortPath VARCHAR,
+  id serial PRIMARY KEY,
+  shortPath VARCHAR DEFAULT '',
   fullPath VARCHAR,
-  title VARCHAR,
+  title VARCHAR DEFAULT ''
 )
 
 CREATE OR REPLACE FUNCTION add_new_url(
