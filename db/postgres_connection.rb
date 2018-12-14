@@ -64,10 +64,9 @@ class PostgresDirect
   # Get our data back select * from Url
 
   def queryUserTable(url)
-    newQuery = "select * from validate_fullpath('" + url + "', '', '')"
-    puts 'newQuery, ' + newQuery
+    newQuery = "select * from validate_fullpath('" + url + "')"
     @conn.exec(newQuery) do |result|
-        return result.getvalue(0, 0)
+      return result.getvalue(0, 0)
     end
   end
 
