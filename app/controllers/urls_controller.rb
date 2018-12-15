@@ -7,6 +7,7 @@ require 'httparty'
 require './db/postgres_connection'
 
 class UrlsController < ApplicationController
+  $problemInDB = "There was a problem in the database"
 
   def noRouteMatch
     render json: {"result": "No route match"}
@@ -49,7 +50,14 @@ class UrlsController < ApplicationController
     finalShortUrl = mainDBActions.execProcedureDB(stringVerifyShortPath)
 
     if(finalShortUrl)
-      redirect_to finalShortUrl
+      stringVerifyUpdateCreate = "create_update_visited('" + shortHashUrl + "')"
+      resultUptCreate = mainDBActions.execProcedureDB(stringVerifyUpdateCreate)
+      if(resultUptCreate)
+        redirect_to finalShortUrl
+      else
+        @Message = $problemInDB
+      end
+      
       # render json: {"result": finalShortUrl}
     else
       @Message = "Unknown URL"
@@ -62,7 +70,6 @@ class UrlsController < ApplicationController
   def validateFullPath
     mainDBActions = PostgresDirect.new()
     mainDBActions.connect
-    problemInDB = "There was a problem in the database"
     message = ""
     insertedUrl = params.values[0]
     stringVerifyFullPath = "validate_fullpath('" + insertedUrl + "')"
@@ -75,7 +82,7 @@ class UrlsController < ApplicationController
         idUrlReg = Integer(mainDBActions.execProcedureDB(stringCreateGetUrl))
 
         if(idUrlReg == 0)
-          message = problemInDB
+          message = $problemInDB
         else
           threadTitle = Thread.new { updateTitleTag(mainDBActions, insertedUrl, idUrlReg) } # updateTitleTag(dbInstance, insertedUrl, titleTag, idRegister)
           threadTitle.join
@@ -87,7 +94,7 @@ class UrlsController < ApplicationController
             finalUrlResult = serverUrl + newHashUrl
             message=finalUrlResult
           else
-            message = problemInDB
+            message = $problemInDB
           end
 
           # message = "newhash: " + newHashUrl
