@@ -8,6 +8,8 @@ class StringConfiguration
   $problemDBString = "There was a problem in the database"
   $hashUrlString = "urlshortapiruby"
   $httpsString = "https"
+  $resultString = "result"
+  $welcomeString = "Welcome to " + $hashUrlString + " API !"
 
   def updateTitleString(urlTitle, idRegister)
     "update_title('" + urlTitle + "', '" + idRegister.to_s + "')"
@@ -59,5 +61,13 @@ class StringConfiguration
 
   def getHttpsString
     $httpsString
+  end
+
+  def getResultString
+    $resultString
+  end
+
+  def getWelcomeString
+    $welcomeString
   end
 end

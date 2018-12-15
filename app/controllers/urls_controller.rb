@@ -11,9 +11,15 @@ class UrlsController < ApplicationController
   $mainDBActions = PostgresDirect.new()
   $stringConfiguration = StringConfiguration.new()
   $cero = 0
+  $resultStr = $stringConfiguration.getResultString
+  $urlBrake = $stringConfiguration.getUrlDoesntWorkString
 
+  def rootRoute
+    render json: $stringConfiguration.getWelcomeString
+  end
+  
   def noRouteMatch
-    render json: {"result": "No route match"}
+    render json: $urlBrake
   end
 
   def createHashFromUrl(idNumber)
@@ -74,6 +80,7 @@ class UrlsController < ApplicationController
     else
       @Message = $stringConfiguration.getUnknownURLString
     end
+
     $mainDBActions.disconnect
   end
 
@@ -81,41 +88,46 @@ class UrlsController < ApplicationController
     $mainDBActions.connect
     message = ""
     insertedUrl = params.values[$cero]
-    stringVerifyFullPath = $stringConfiguration.validateFullPathString(insertedUrl)
-    finalUrl = $mainDBActions.execProcedureDB(stringVerifyFullPath)[$cero][$cero]
-    serverUrl = $stringConfiguration.getServerUrlString
 
-    if(finalUrl.nil?)
-      existUrl = verifyUrlExist(insertedUrl)
-
-      if(existUrl)
-        stringCreateGetUrl = $stringConfiguration.createUrlGetIdString(insertedUrl)
-        idUrlReg = Integer($mainDBActions.execProcedureDB(stringCreateGetUrl)[$cero][$cero])
-        problemInDB = $stringConfiguration.getProblemDBString
-        if(idUrlReg == $cero)
-          message = problemInDB
-        else
-          threadTitle = Thread.new { updateTitleTag($mainDBActions, insertedUrl, idUrlReg) }
-          threadTitle.join
-          newHashUrl = createHashFromUrl(idUrlReg)
-          stringUpdateShortUrl = $stringConfiguration.updateShortPathIdString(newHashUrl, idUrlReg.to_s)
-          isHashUpdated = $mainDBActions.execProcedureDB(stringUpdateShortUrl)[$cero][$cero]
-
-          if(Integer(isHashUpdated) == 1)
-            finalUrlResult = serverUrl + newHashUrl
-            message=finalUrlResult
-          else
-            message = problemInDB
-          end
-        end
-      else
-        message = $stringConfiguration.getUrlDoesntWorkString
-      end 
+    if(insertedUrl.nil?)
+      message = $urlBrake
     else
-      message = serverUrl + finalUrl
+      stringVerifyFullPath = $stringConfiguration.validateFullPathString(insertedUrl)
+      finalUrl = $mainDBActions.execProcedureDB(stringVerifyFullPath)[$cero][$cero]
+      serverUrl = $stringConfiguration.getServerUrlString
+  
+      if(finalUrl.nil?)
+        existUrl = verifyUrlExist(insertedUrl)
+  
+        if(existUrl)
+          stringCreateGetUrl = $stringConfiguration.createUrlGetIdString(insertedUrl)
+          idUrlReg = Integer($mainDBActions.execProcedureDB(stringCreateGetUrl)[$cero][$cero])
+          problemInDB = $stringConfiguration.getProblemDBString
+          if(idUrlReg == $cero)
+            message = problemInDB
+          else
+            threadTitle = Thread.new { updateTitleTag($mainDBActions, insertedUrl, idUrlReg) }
+            threadTitle.join
+            newHashUrl = createHashFromUrl(idUrlReg)
+            stringUpdateShortUrl = $stringConfiguration.updateShortPathIdString(newHashUrl, idUrlReg.to_s)
+            isHashUpdated = $mainDBActions.execProcedureDB(stringUpdateShortUrl)[$cero][$cero]
+  
+            if(Integer(isHashUpdated) == 1)
+              finalUrlResult = serverUrl + newHashUrl
+              message=finalUrlResult
+            else
+              message = problemInDB
+            end
+          end
+        else
+          message = $urlBrake
+        end 
+      else
+        message = serverUrl + finalUrl
+      end
+        $mainDBActions.disconnect
     end
-      $mainDBActions.disconnect
 
-      render json: {"result":message}
+    render json: message
   end
 end
