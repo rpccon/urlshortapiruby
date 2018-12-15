@@ -35,7 +35,7 @@ class PostgresDirect
   def execProcedureDB(stringQuery)
     newQuery = "select * from " + stringQuery
     @conn.exec(newQuery) do |result|
-      return result.getvalue(0, 0)
+      return result.values
     end
   end
 

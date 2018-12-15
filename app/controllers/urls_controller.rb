@@ -8,6 +8,7 @@ require './db/postgres_connection'
 
 class UrlsController < ApplicationController
   $problemInDB = "There was a problem in the database"
+  $mainDBActions = PostgresDirect.new()
 
   def noRouteMatch
     render json: {"result": "No route match"}
@@ -41,17 +42,28 @@ class UrlsController < ApplicationController
       false
     end
   end
+  def topRecently
+    stringtopRecently = "get_top_recently_urls()"
+    $mainDBActions.connect
+    finalTopRecently = $mainDBActions.execProcedureDB(stringtopRecently)
+    render json: finalTopRecently
+    
+    /if(Integer(finalTopRecently))
+
+    else
+    end/
+
+  end
   def redirectShortPath
-    mainDBActions = PostgresDirect.new()
-    mainDBActions.connect
+    $mainDBActions.connect
     shortHashUrl = params[:id]
     # @Message = "No url has been attached"
     stringVerifyShortPath = "validate_shortPath('" + shortHashUrl + "')"
-    finalShortUrl = mainDBActions.execProcedureDB(stringVerifyShortPath)
+    finalShortUrl = $mainDBActions.execProcedureDB(stringVerifyShortPath)[0][0]
 
     if(finalShortUrl)
       stringVerifyUpdateCreate = "create_update_visited('" + shortHashUrl + "')"
-      resultUptCreate = mainDBActions.execProcedureDB(stringVerifyUpdateCreate)
+      resultUptCreate = $mainDBActions.execProcedureDB(stringVerifyUpdateCreate)[0][0]
       if(resultUptCreate)
         redirect_to finalShortUrl
       else
@@ -64,31 +76,30 @@ class UrlsController < ApplicationController
     end
     # if()
       
-    mainDBActions.disconnect
+    $mainDBActions.disconnect
     
   end
   def validateFullPath
-    mainDBActions = PostgresDirect.new()
-    mainDBActions.connect
+    $mainDBActions.connect
     message = ""
     insertedUrl = params.values[0]
     stringVerifyFullPath = "validate_fullpath('" + insertedUrl + "')"
-    finalUrl = mainDBActions.execProcedureDB(stringVerifyFullPath)
+    finalUrl = $mainDBActions.execProcedureDB(stringVerifyFullPath)[0][0]
     serverUrl = "https://urlshortapiserver.herokuapp.com/redirect/"
     if(finalUrl.nil?)
       existUrl = verifyUrlExist(insertedUrl)
       if(existUrl)
         stringCreateGetUrl = "create_url_get_id('" + insertedUrl + "')"
-        idUrlReg = Integer(mainDBActions.execProcedureDB(stringCreateGetUrl))
+        idUrlReg = Integer($mainDBActions.execProcedureDB(stringCreateGetUrl)[0][0])
 
         if(idUrlReg == 0)
           message = $problemInDB
         else
-          threadTitle = Thread.new { updateTitleTag(mainDBActions, insertedUrl, idUrlReg) } # updateTitleTag(dbInstance, insertedUrl, titleTag, idRegister)
+          threadTitle = Thread.new { updateTitleTag($mainDBActions, insertedUrl, idUrlReg) } # updateTitleTag(dbInstance, insertedUrl, titleTag, idRegister)
           threadTitle.join
           newHashUrl = createHashFromUrl(idUrlReg)
           stringUpdateShortUrl = "update_shortpath_from_id('"+ newHashUrl +"', '" + idUrlReg.to_s + "')"
-          isHashUpdated = mainDBActions.execProcedureDB(stringUpdateShortUrl)
+          isHashUpdated = $mainDBActions.execProcedureDB(stringUpdateShortUrl)[0][0]
 
           if(Integer(isHashUpdated) == 1)
             finalUrlResult = serverUrl + newHashUrl
@@ -112,7 +123,7 @@ class UrlsController < ApplicationController
       message = serverUrl + finalUrl
       
     end
-      mainDBActions.disconnect
+      $mainDBActions.disconnect
       render json: {"result":message}
     # redirect_to finalUrl
     # @defined = {"a" => "gmail.com/ghgh000"}
