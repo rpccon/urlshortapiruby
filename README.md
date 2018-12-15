@@ -8,7 +8,7 @@ General information:
 
     * It uses postgreSQL as a database, it is hosted on Heroku too.
 
-    * In the database are created 2 tables, one to manage utl information and the other to store   recently URLs visited.
+    * In the database are created 2 tables, one to manage URLs information and the other to store recently URLs visited.
 
     * The background-job of the title was created using the Ruby class Thread. Visiting a          procedure in the database to update the shortest url of the already created URL.
 
@@ -25,13 +25,13 @@ Endpoints information:
     For test the functionality you can add to the domain:
 
     * /validateFullPath?url=[here goes the url you want to convert]
-    for example https://urlshortapiserver.herokuapp.com/validateFullPath?url=https://www.google.com
+      for example https://urlshortapiserver.herokuapp.com/validateFullPath?url=https://www.google.com
     
 
-    * /redirect/[here goes the shortest url you've generated with /validateFullPath for example https://urlshortapiserver.herokuapp.com/redirect/sdfsdf
+    * /redirect/[here goes the shortest url you've generated with /validateFullPath] => for example https://urlshortapiserver.herokuapp.com/redirect/sdfsdf
      
 
-    * /top100 => only adding this text you'll get urls recently used with the title included, with the format [[itemA url, itemA title]]. The link looks like this https://urlshortapiserver.herokuapp.com/top100
+    * /top100 => only adding this text you'll get urls recently used with the title included,      with the format [[itemA url, itemA title]]. The link looks like this        https://urlshortapiserver.herokuapp.com/top100
     
 
 
