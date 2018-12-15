@@ -13,7 +13,7 @@ CREATE TABLE Recently_Visited_Urls(
 )
 
 CREATE OR REPLACE FUNCTION get_top_recently_urls()
-RETURNS TABLE(fullPath VARCHAR, title VARCHAR) AS
+  RETURNS TABLE(fullPath VARCHAR, title VARCHAR) AS
 $BODY$
 BEGIN
 	RETURN QUERY (SELECT Url.fullPath, Url.title FROM Url
@@ -24,7 +24,7 @@ $BODY$
 LANGUAGE plpgsql
 
 CREATE OR REPLACE FUNCTION create_update_visited(hashUrl VARCHAR)
-RETURNS INT AS
+  RETURNS INT AS
 $BODY$
 DECLARE
 	idRecV INT;
@@ -58,7 +58,6 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql
-
 
 CREATE OR REPLACE FUNCTION public.validate_fullpath(allpath VARCHAR)
   RETURNS VARCHAR AS
