@@ -32,6 +32,16 @@ Endpoints information:
      
 
     * /top100 => only adding this text you'll get urls recently used with the title included,      with the format [[itemA url, itemA title]]. The link looks like this        https://urlshortapiserver.herokuapp.com/top100
+
+
+    Extra information:
+
+    * With validateFullPath endpoint cretaes the shortest url of the long URL in the database, if you run again the same link, will return as a first time the shortes URL. It does't generate de shortest URL again, take it from the database.
+
+
+    * The algorithm in top100 is easy, in the database I have a table URLs_visited, where I save all urls visited but always asking if url is here, because if is true I need to update the time it was visited, because when user run the endpoint I get the limit of 100 items in table oredered from up to down, to get recently items.
+
+
     
 
 

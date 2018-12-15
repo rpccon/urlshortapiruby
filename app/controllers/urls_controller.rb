@@ -58,7 +58,8 @@ class UrlsController < ApplicationController
     stringtopRecently = $stringConfiguration.getTopRecentlyString
     $mainDBActions.connect
     finalTopRecently = $mainDBActions.execProcedureDB(stringtopRecently)
-
+    $mainDBActions.disconnect
+    
     render json: finalTopRecently
   end
 
@@ -125,8 +126,9 @@ class UrlsController < ApplicationController
       else
         message = serverUrl + finalUrl
       end
-        $mainDBActions.disconnect
     end
+
+    $mainDBActions.disconnect
 
     render json: message
   end
