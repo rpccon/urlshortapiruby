@@ -37,13 +37,22 @@ class UrlsController < ApplicationController
       false
     end
   end
+  def redirectShortPath
+    puts 'params'
+    shortHashUrl = params[:id]
+    @Message = "No url has been attached"
+    if(shortHashUrl)
+      #render json: {"result": "is null"}
+
+    end
+    #render json: {"result": "no null"}
+    
+  end
   def validateFullPath
     mainDBActions = PostgresDirect.new()
     mainDBActions.connect
     problemInDB = "There was a problem in the database"
     message = ""
-    puts 'looking domain'
-    puts params
     insertedUrl = params.values[0]
     stringVerifyFullPath = "validate_fullpath('" + insertedUrl + "')"
     finalUrl = mainDBActions.execProcedureDB(stringVerifyFullPath)
@@ -53,8 +62,7 @@ class UrlsController < ApplicationController
       if(existUrl)
         stringCreateGetUrl = "create_url_get_id('" + insertedUrl + "')"
         idUrlReg = Integer(mainDBActions.execProcedureDB(stringCreateGetUrl))
-        puts 'returnidurl'
-        puts idUrlReg
+
         if(idUrlReg == 0)
           message = problemInDB
         else
@@ -65,7 +73,8 @@ class UrlsController < ApplicationController
           isHashUpdated = mainDBActions.execProcedureDB(stringUpdateShortUrl)
 
           if(Integer(isHashUpdated) == 1)
-            message="updated"
+            finalUrlResult = "https://urlshortapiserver.herokuapp.com/" + newHashUrl
+            message=finalUrlResult
           else
             message = problemInDB
           end
@@ -85,6 +94,7 @@ class UrlsController < ApplicationController
       message = "The shortest URL is " + finalUrl
       
     end
+      mainDBActions.disconnect
       render json: {"result":message}
     # redirect_to finalUrl
     # @defined = {"a" => "gmail.com/ghgh000"}
