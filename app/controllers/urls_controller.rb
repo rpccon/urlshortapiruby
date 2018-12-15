@@ -4,18 +4,20 @@ require 'hashids'
 require 'rss'
 require 'httparty'
 
+require './app/models/stringConfiguration'
 require './db/postgres_connection'
 
 class UrlsController < ApplicationController
-  $problemInDB = "There was a problem in the database"
   $mainDBActions = PostgresDirect.new()
+  $stringConfiguration = StringConfiguration.new()
+  $cero = 0
 
   def noRouteMatch
     render json: {"result": "No route match"}
   end
 
   def createHashFromUrl(idNumber)
-    hashids = Hashids.new "urlshortapiruby"
+    hashids = Hashids.new $stringConfiguration.getHashUrlString
     newHashIdentifuer = hashids.encode(idNumber)
 
     return newHashIdentifuer
@@ -30,7 +32,7 @@ class UrlsController < ApplicationController
 
   def updateTitleTag(dbInstance, insertedUrl, idRegister)
     urlTitle = getTitleTag(insertedUrl)
-    stringUpdateTitle = "update_title('" + urlTitle + "', '" + idRegister.to_s + "')"
+    stringUpdateTitle = $stringConfiguration.updateTitleString(urlTitle, idRegister)
     dbInstance.execProcedureDB(stringUpdateTitle)
   end
 
@@ -38,7 +40,7 @@ class UrlsController < ApplicationController
     begin
       url = URI.parse(insertedUrl)
       req = Net::HTTP.new(url.host, url.port)
-      req.use_ssl = true if url.scheme == 'https'
+      req.use_ssl = true if url.scheme == $stringConfiguration.getHttpsString
       res = req.request_head(url.path)
       true
     rescue
@@ -47,7 +49,7 @@ class UrlsController < ApplicationController
   end
   
   def topRecently
-    stringtopRecently = "get_top_recently_urls()"
+    stringtopRecently = $stringConfiguration.getTopRecentlyString
     $mainDBActions.connect
     finalTopRecently = $mainDBActions.execProcedureDB(stringtopRecently)
 
@@ -57,20 +59,20 @@ class UrlsController < ApplicationController
   def redirectShortPath
     $mainDBActions.connect
     shortHashUrl = params[:id]
-    stringVerifyShortPath = "validate_shortPath('" + shortHashUrl + "')"
-    finalShortUrl = $mainDBActions.execProcedureDB(stringVerifyShortPath)[0][0]
+    stringVerifyShortPath = $stringConfiguration.validateShortPathString(shortHashUrl)
+    finalShortUrl = $mainDBActions.execProcedureDB(stringVerifyShortPath)[$cero][$cero]
 
     if(finalShortUrl)
-      stringVerifyUpdateCreate = "create_update_visited('" + shortHashUrl + "')"
-      resultUptCreate = $mainDBActions.execProcedureDB(stringVerifyUpdateCreate)[0][0]
+      stringVerifyUpdateCreate = $stringConfiguration.createUpdateVisitedString(shortHashUrl)
+      resultUptCreate = $mainDBActions.execProcedureDB(stringVerifyUpdateCreate)[$cero][$cero]
 
       if(resultUptCreate)
         redirect_to finalShortUrl
       else
-        @Message = $problemInDB
+        @Message = $stringConfiguration.getProblemDBString
       end
     else
-      @Message = "Unknown URL"
+      @Message = $stringConfiguration.getUnknownURLString
     end
     $mainDBActions.disconnect
   end
@@ -78,36 +80,36 @@ class UrlsController < ApplicationController
   def validateFullPath
     $mainDBActions.connect
     message = ""
-    insertedUrl = params.values[0]
-    stringVerifyFullPath = "validate_fullpath('" + insertedUrl + "')"
-    finalUrl = $mainDBActions.execProcedureDB(stringVerifyFullPath)[0][0]
-    serverUrl = "https://urlshortapiserver.herokuapp.com/redirect/"
+    insertedUrl = params.values[$cero]
+    stringVerifyFullPath = $stringConfiguration.validateFullPathString(insertedUrl)
+    finalUrl = $mainDBActions.execProcedureDB(stringVerifyFullPath)[$cero][$cero]
+    serverUrl = $stringConfiguration.getServerUrlString
 
     if(finalUrl.nil?)
       existUrl = verifyUrlExist(insertedUrl)
 
       if(existUrl)
-        stringCreateGetUrl = "create_url_get_id('" + insertedUrl + "')"
-        idUrlReg = Integer($mainDBActions.execProcedureDB(stringCreateGetUrl)[0][0])
-
-        if(idUrlReg == 0)
-          message = $problemInDB
+        stringCreateGetUrl = $stringConfiguration.createUrlGetIdString(insertedUrl)
+        idUrlReg = Integer($mainDBActions.execProcedureDB(stringCreateGetUrl)[$cero][$cero])
+        problemInDB = $stringConfiguration.getProblemDBString
+        if(idUrlReg == $cero)
+          message = problemInDB
         else
-          threadTitle = Thread.new { updateTitleTag($mainDBActions, insertedUrl, idUrlReg) } # updateTitleTag(dbInstance, insertedUrl, titleTag, idRegister)
+          threadTitle = Thread.new { updateTitleTag($mainDBActions, insertedUrl, idUrlReg) }
           threadTitle.join
           newHashUrl = createHashFromUrl(idUrlReg)
-          stringUpdateShortUrl = "update_shortpath_from_id('"+ newHashUrl +"', '" + idUrlReg.to_s + "')"
-          isHashUpdated = $mainDBActions.execProcedureDB(stringUpdateShortUrl)[0][0]
+          stringUpdateShortUrl = $stringConfiguration.updateShortPathIdString(newHashUrl, idUrlReg.to_s)
+          isHashUpdated = $mainDBActions.execProcedureDB(stringUpdateShortUrl)[$cero][$cero]
 
           if(Integer(isHashUpdated) == 1)
             finalUrlResult = serverUrl + newHashUrl
             message=finalUrlResult
           else
-            message = $problemInDB
+            message = problemInDB
           end
         end
       else
-        message = "Url indicated doesn't work, make sure it's correct !"
+        message = $stringConfiguration.getUrlDoesntWorkString
       end 
     else
       message = serverUrl + finalUrl
