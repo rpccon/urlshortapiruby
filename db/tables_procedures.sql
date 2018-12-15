@@ -32,6 +32,15 @@ END
 $BODY$
   LANGUAGE plpgsql
 
+CREATE OR REPLACE FUNCTION validate_shortpath(smallPath VARCHAR)
+  RETURNS VARCHAR AS
+$BODY$
+BEGIN
+	RETURN (SELECT fullPath FROM Url WHERE shortPath = smallPath);
+END
+$BODY$
+LANGUAGE plpgsql
+
 CREATE OR REPLACE FUNCTION public.create_url_get_id(allpath character varying)
   RETURNS character varying AS
 $BODY$

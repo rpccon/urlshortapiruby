@@ -8,6 +8,9 @@ require './db/postgres_connection'
 
 class UrlsController < ApplicationController
 
+  def noRouteMatch
+    render json: {"result": "No route match"}
+  end
   def createHashFromUrl(idNumber)
     hashids = Hashids.new "urlshortapiruby"
     newHashIdentifuer = hashids.encode(idNumber)
@@ -38,14 +41,22 @@ class UrlsController < ApplicationController
     end
   end
   def redirectShortPath
-    puts 'params'
+    mainDBActions = PostgresDirect.new()
+    mainDBActions.connect
     shortHashUrl = params[:id]
-    @Message = "No url has been attached"
-    if(shortHashUrl)
-      #render json: {"result": "is null"}
+    # @Message = "No url has been attached"
+    stringVerifyShortPath = "validate_shortPath('" + shortHashUrl + "')"
+    finalShortUrl = mainDBActions.execProcedureDB(stringVerifyShortPath)
 
+    if(finalShortUrl)
+      redirect_to finalShortUrl
+      # render json: {"result": finalShortUrl}
+    else
+      @Message = "Unknown URL"
     end
-    #render json: {"result": "no null"}
+    # if()
+      
+    mainDBActions.disconnect
     
   end
   def validateFullPath
@@ -56,7 +67,7 @@ class UrlsController < ApplicationController
     insertedUrl = params.values[0]
     stringVerifyFullPath = "validate_fullpath('" + insertedUrl + "')"
     finalUrl = mainDBActions.execProcedureDB(stringVerifyFullPath)
-
+    serverUrl = "https://urlshortapiserver.herokuapp.com/redirect/"
     if(finalUrl.nil?)
       existUrl = verifyUrlExist(insertedUrl)
       if(existUrl)
@@ -73,7 +84,7 @@ class UrlsController < ApplicationController
           isHashUpdated = mainDBActions.execProcedureDB(stringUpdateShortUrl)
 
           if(Integer(isHashUpdated) == 1)
-            finalUrlResult = "https://urlshortapiserver.herokuapp.com/" + newHashUrl
+            finalUrlResult = serverUrl + newHashUrl
             message=finalUrlResult
           else
             message = problemInDB
@@ -91,7 +102,7 @@ class UrlsController < ApplicationController
         message = "Url indicated doesn't work, make sure it's correct !"
       end 
     else
-      message = "The shortest URL is " + finalUrl
+      message = serverUrl + finalUrl
       
     end
       mainDBActions.disconnect
