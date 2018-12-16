@@ -41,6 +41,8 @@ Endpoints information:
 
     * The algorithm in top100 is easy, in the database I have a table URLs_visited, where I save all urls visited but always asking if url is here, because if is true I need to update the time it was visited, because when user run the endpoint I get the limit of 100 items in table oredered from up to down, to get recently items.
 
+    * Remember list '/top100' has only links are recently "VISITED", it means only if you use '/redirect' endpoint it will be added to that list. Isn't added to the list when you use '/validateFullPath' endpoint, because it creates the shortest url in the database.
+
 
     
 
