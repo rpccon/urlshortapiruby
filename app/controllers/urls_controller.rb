@@ -8,6 +8,7 @@ require './app/models/stringConfiguration'
 require './db/postgres_connection'
 
 class UrlsController < ApplicationController
+  skip_before_action :verify_authenticity_token
   $mainDBActions = PostgresDirect.new()
   $stringConfiguration = StringConfiguration.new()
   $cero = 0
@@ -88,7 +89,7 @@ class UrlsController < ApplicationController
   def validateFullPath
     $mainDBActions.connect
     message = ""
-    insertedUrl = params.values[$cero]
+    insertedUrl = JSON.parse(request.body.read)["url"]
 
     if(insertedUrl.nil?)
       message = $urlBrake
